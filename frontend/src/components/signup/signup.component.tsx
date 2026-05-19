@@ -22,6 +22,26 @@ interface Inputs extends IRegisterInfo {
   otp: string;
 }
 
+const getPasswordError = (password: string) => {
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter";
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number";
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return "Password must contain at least one special character";
+  }
+
+  return "";
+};
+
 const SignUpComponent = () => {
   const navigate = useNavigate();
   const [emailVerify] = useEmailVerifyMutation();
@@ -51,6 +71,11 @@ const SignUpComponent = () => {
       };
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
+        return;
+      }
+      const passwordError = getPasswordError(data.password);
+      if (passwordError) {
+        toast.error(passwordError);
         return;
       }
       setIsBusy(true);
@@ -165,6 +190,10 @@ const SignUpComponent = () => {
                 icon="fas fa-lock"
                 register={register}
               />
+              <p className="text-xs text-gray-500 -mt-2">
+                Use at least 8 characters with uppercase, lowercase, number,
+                and special character.
+              </p>
               <SSInput
                 label="Confirm Password"
                 name="confirmPassword"
