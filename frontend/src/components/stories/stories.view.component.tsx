@@ -49,6 +49,26 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
   }, [stories]);
 
+useEffect(() => {
+  const autoSaveStory = async () => {
+    if (!selectedStory) return;
+
+    const post: IPost = {
+      ...selectedStory,
+      topic: selectTopics,
+    };
+
+    try {
+      await createPost(post).unwrap();
+      toast.success("Story auto-saved!");
+    } catch (error) {
+      console.error("Auto-save failed", error);
+    }
+  };
+
+  autoSaveStory();
+}, [selectedStory, isLogin, selectTopics]);
+
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
