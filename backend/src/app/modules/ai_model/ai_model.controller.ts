@@ -43,14 +43,65 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
     res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
   }
 
+  const guard = createGuestQuotaGuard(userId);
+  await runWithQuotaCleanup(guard, async () => {
+    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeModelGenerate(prompt);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Story generated successfully!",
       data: result,
+    });
   });
 });
+
+const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const guard = res.locals.quotaRefundGuard;
+
+  if (!guard) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Quota guard missing — checkRequestLimit middleware required"
+    );
+  }
+
+  await runWithQuotaCleanup(guard, async () => {
+    const token = await getToken(req);
+    const result = await AiModelService.aiModelAlternateEndings(payload, token);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Alternate endings generated successfully!",
+      data: result,
+    });
+  });
+});
+
+const aiFreeModelAlternateEndings = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload = req.body;
+    let userId = req.cookies.userId as string | undefined;
+
+    if (!userId) {
+      userId = Math.random().toString(36).substring(7);
+      res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    }
+
+    const guard = createGuestQuotaGuard(userId);
+    await runWithQuotaCleanup(guard, async () => {
+      await reserveGuestQuota(userId);
+      const result = await AiModelService.aiFreeModelAlternateEndings(payload);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Alternate endings generated successfully!",
+        data: result,
+      });
+    });
+  }
+);
 
 export const AiModelController = {
   aiModelGenerate,

@@ -47,6 +47,6 @@
     "@types/socket.io": "^3.0.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "~5.7.2"
+    "typescript": "^5.7.2"
   }
 }

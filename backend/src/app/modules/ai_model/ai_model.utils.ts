@@ -4,8 +4,10 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
+import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
+import { IAlternateEnding } from "./ai_model.interface";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
