@@ -74,7 +74,7 @@ export default function CollabRoom() {
 
     setSocket(newSocket);
     return () => { newSocket.disconnect(); };
-  }, [roomId]);
+  }, [roomId, token, userId, username]);
 
   useEffect(() => {
     storyEndRef.current?.scrollIntoView({ behavior: "smooth" });

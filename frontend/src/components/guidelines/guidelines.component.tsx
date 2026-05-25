@@ -77,55 +77,18 @@ const GuidelinesComponent = () => {
           Community rules, writing tips, and AI usage policies for Story Spark AI.
         </p>
 
-        {/* Community Guidelines */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">
-            📖 Community & Writing Guidelines
-          </h2>
-          <ul className="space-y-3 text-gray-300 list-disc list-inside">
-            <li>Be respectful and constructive in all interactions.</li>
-            <li>Do not plagiarize — all stories must be original.</li>
-            <li>Keep content appropriate for the platform's audience.</li>
-            <li>Give credit when building on others' ideas or prompts.</li>
-          </ul>
-        </section>
-
-        {/* AI Usage */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">
-            🤖 AI Usage & Content Safety
-          </h2>
-          <ul className="space-y-3 text-gray-300 list-disc list-inside">
-            <li>AI-generated content must be reviewed before publishing.</li>
-            <li>Do not use AI to generate harmful or misleading content.</li>
-            <li>Disclose AI assistance when sharing stories publicly.</li>
-          </ul>
-        </section>
-
-        {/* Storytelling Tips */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">
-            ✍️ Tips for Better Storytelling & Prompts
-          </h2>
-          <ul className="space-y-3 text-gray-300 list-disc list-inside">
-            <li>Be specific in your prompts — vague inputs give vague stories.</li>
-            <li>Set the scene: include genre, tone, and character details.</li>
-            <li>Iterate — refine your story through multiple prompt rounds.</li>
-          </ul>
-        </section>
-
-        {/* Contribution Rules */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">
-            🤝 Contribution Rules
-          </h2>
-          <ul className="space-y-3 text-gray-300 list-disc list-inside">
-            <li>Follow the project's Code of Conduct at all times.</li>
-            <li>Open an issue before starting work on a new feature.</li>
-            <li>Keep PRs focused — one feature or fix per PR.</li>
-            <li>Write clear commit messages describing what you changed.</li>
-          </ul>
-        </section>
+        {sections.map((section) => (
+          <section key={section.title} className="mb-12">
+            <h2 className="text-2xl font-semibold mb-4">
+              {section.icon} {section.title}
+            </h2>
+            <ul className="space-y-3 text-gray-300 list-disc list-inside">
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
       </div>
     </div>

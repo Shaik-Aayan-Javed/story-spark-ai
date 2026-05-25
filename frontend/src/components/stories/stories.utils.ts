@@ -44,8 +44,6 @@ export interface ITopicData {
   className?: string;
   selected: boolean;
 }
-  selected: boolean;
-}
 
 export const topicsData: ITopicData[] = [
   {
