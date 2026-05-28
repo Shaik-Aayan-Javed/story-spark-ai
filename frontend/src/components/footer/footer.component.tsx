@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logoNew.png";
 
+const DEFAULT_GITHUB_ISSUES_URL = "https://github.com/ronisarkarexe/story-spark-ai/issues";
+
 const FooterComponent = () => {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -47,13 +49,16 @@ const FooterComponent = () => {
     { label: "Terms",    to: "/terms"    },
   ];
 
+  const githubIssuesUrl =
+    import.meta.env.VITE_GITHUB_REPO_ISSUES_URL || DEFAULT_GITHUB_ISSUES_URL;
+
   const resourceLinks = [
     { label: "Blog",         to: "/blog"        },
     { label: "Help Center",  to: "/help"        },
     { label: "Community",    to: "/community"   },
     { label: "Guidelines",   to: "/guidelines"  },
     { label: "Contributors", to: "/contributors"},
-    { label: "Report Bug",   to: "https://gssoc.girlscript.org/projects/ronisarkarexe%2Fstory-spark-ai" },
+    { label: "Report Bug",   to: githubIssuesUrl },
   ];
 
 
