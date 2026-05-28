@@ -2,6 +2,8 @@ import express from "express";
 import { AuthController } from "./auth.controller";
 import validateRequest from "../../middleware/validate.request";
 import { UserValidator } from "../user/user.validation";
+import auth from "../../middleware/auth.middleware";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 const router = express.Router();
 
 // Login API route
@@ -23,5 +25,17 @@ router.post(
 
 // Refresh Token API route
 router.post("/refresh-token", AuthController.refreshToken);
+
+// Change Password API route
+router.post(
+  "/change-password",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  AuthController.changePassword
+);
 
 export const AuthRouter = router;

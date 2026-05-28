@@ -73,9 +73,24 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const { oldPassword, newPassword } = req.body;
+
+  await AuthService.changePassword(user, { oldPassword, newPassword });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message:
+      "Password changed successfully. All previous sessions have been invalidated.",
+  });
+});
+
 export const AuthController = {
   login,
   register,
   refreshToken,
   googleLogin,
+  changePassword,
 };
