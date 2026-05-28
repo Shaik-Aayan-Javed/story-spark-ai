@@ -64,6 +64,7 @@ const FooterComponent = () => {
 
   const legalLinks = [
     { label: "Privacy", to: "/privacy-policy" },
+    { label: "Cookie Policy", to: "/cookie-policy" },
     { label: "Terms", to: "/terms" },
     { label: "Guidelines", to: "/guidelines" },
   ];
