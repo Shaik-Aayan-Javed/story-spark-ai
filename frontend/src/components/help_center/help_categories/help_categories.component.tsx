@@ -32,7 +32,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-14">
         {categories.map((category) => (
           <HelpCategoryCard key={category.id} category={category} />
         ))}

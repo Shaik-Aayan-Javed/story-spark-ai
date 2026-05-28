@@ -69,7 +69,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                 <button
                   id={buttonId}
                   type="button"
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 cursor-pointer"
                   aria-expanded={isOpen}
                   aria-controls={panelId}
                   onClick={() => toggleItem(item.id)}
