@@ -18,6 +18,7 @@ import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
 import { StoryVersionRouter } from "../app/modules/story_version/story_version.router";
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
+import { BugReportRouter } from "../app/modules/bug_report/bug_report.router";
 import { RecommendationRouter } from "../app/modules/recommendation/recommendation.router";
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
 
@@ -95,6 +96,10 @@ const modules = [
   {
     path: "/reports",
     router: ReportRouter,
+  },
+  {
+    path: "/bug-reports",
+    router: BugReportRouter,
   },
   {
     path: "/recommendations",
