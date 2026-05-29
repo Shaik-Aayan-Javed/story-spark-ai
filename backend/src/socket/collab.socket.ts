@@ -1,15 +1,19 @@
 import { Server, Socket } from "socket.io";
 import logger from "../utils/logger.util";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AiModelService } from "../app/modules/ai_model/ai_model.service";
 import config from "../config";
 import { JwtHalers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
 
-const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
-
 const COLORS = [
-  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
-  "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#F7DC6F",
 ];
 
 interface IParticipant {
@@ -53,11 +57,18 @@ export const setupCollabSocket = (io: Server) => {
     try {
       const token = socket.handshake.auth?.token as string | undefined;
       if (!token) return next(new Error("Unauthorized"));
-      
-      const verifiedUser = JwtHalers.verifyToken(token, config.jwt.secret as Secret);
-      const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+
+      const verifiedUser = JwtHalers.verifyToken(
+        token,
+        config.jwt.secret as Secret,
+      );
+      const userId =
+        verifiedUser._id ||
+        verifiedUser.userId ||
+        verifiedUser.sub ||
+        verifiedUser.id;
       if (!userId) return next(new Error("Unauthorized"));
-      
+
       socket.data.userId = userId.toString();
       socket.data.username = verifiedUser.name || "Unknown User";
       next();
@@ -77,12 +88,14 @@ export const setupCollabSocket = (io: Server) => {
       const room: IRoom = {
         roomId,
         createdBy: userId,
-        participants: [{
-          userId,
-          username,
-          color: COLORS[0],
-          socketId: socket.id,
-        }],
+        participants: [
+          {
+            userId,
+            username,
+            color: COLORS[0],
+            socketId: socket.id,
+          },
+        ],
         story: [],
         createdAt: new Date(),
       };
@@ -101,10 +114,17 @@ export const setupCollabSocket = (io: Server) => {
         return;
       }
 
-      const existingParticipant = room.participants.find(p => p.userId === userId);
+      const existingParticipant = room.participants.find(
+        (p) => p.userId === userId,
+      );
       if (!existingParticipant) {
         const color = getColorForUser(room.participants.length);
-        room.participants.push({ userId, username, color, socketId: socket.id });
+        room.participants.push({
+          userId,
+          username,
+          color,
+          socketId: socket.id,
+        });
       } else {
         existingParticipant.socketId = socket.id;
       }
@@ -120,9 +140,11 @@ export const setupCollabSocket = (io: Server) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      const participant = room.participants.find(p => p.userId === userId);
+      const participant = room.participants.find((p) => p.userId === userId);
       if (!participant) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
         return;
       }
 
@@ -136,51 +158,71 @@ export const setupCollabSocket = (io: Server) => {
       };
 
       room.story.push(chunk);
-      collabNamespace.to(roomId).emit("collab:story_updated", { story: room.story, newChunk: chunk });
+      collabNamespace
+        .to(roomId)
+        .emit("collab:story_updated", { story: room.story, newChunk: chunk });
     });
 
     // AI continues the story
     socket.on("collab:ai_continue", async ({ roomId }) => {
       const userId = socket.data.userId;
       const room = rooms.get(roomId);
+
       if (!room) return;
 
-      // Only participants can trigger AI continuation
-      const participant = room.participants.find(p => p.userId === userId);
+      const participant = room.participants.find((p) => p.userId === userId);
+
       if (!participant) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
         return;
       }
 
       collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
 
-      let aiText = "";
       try {
-        const fullContext = room.story.map(chunk => chunk.text).join(" ");
-        const prompt = `Continue the following story naturally and creatively in 2-3 sentences:\n\n${fullContext}`;
+        const storyContext = room.story
+          .map((chunk) => chunk.text)
+          .filter(Boolean)
+          .join(" ");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const result = await model.generateContent(prompt);
-        aiText = result.response.text();
+        const prompt = storyContext
+          ? `Continue this collaborative story naturally and creatively in 2-3 sentences:\n\n${storyContext}`
+          : "Start a collaborative story naturally and creatively in 2-3 sentences.";
+
+        const result = await AiModelService.aiFreeModelGenerate({
+          prompt,
+          wordLength: 120,
+          numStories: 1,
+          language: "English",
+        });
+
+        const continuationText =
+          result?.[0]?.content?.trim() || "The story continues...";
+
+        const aiChunk: IStoryChunk = {
+          authorId: "ai",
+          authorName: "✨ AI",
+          color: "#d4af37",
+          text: continuationText,
+          isAI: true,
+          timestamp: new Date(),
+        };
+
+        room.story.push(aiChunk);
+
+        collabNamespace.to(roomId).emit("collab:story_updated", {
+          story: room.story,
+          newChunk: aiChunk,
+        });
       } catch (error) {
         logger.error("AI collaboration generation failed", error);
-        aiText = "...the AI lost its train of thought. Please try again.";
+
+        collabNamespace.to(roomId).emit("collab:error", {
+          message: "AI continuation failed. Please try again.",
+        });
       }
-
-      const aiChunk: IStoryChunk = {
-        authorId: "ai",
-        authorName: "✨ AI",
-        color: "#d4af37",
-        text: aiText,
-        isAI: true,
-        timestamp: new Date(),
-      };
-
-      room.story.push(aiChunk);
-      collabNamespace.to(roomId).emit("collab:story_updated", {
-        story: room.story,
-        newChunk: aiChunk
-      });
     });
 
     // Typing indicator
@@ -189,7 +231,7 @@ export const setupCollabSocket = (io: Server) => {
       const username = socket.data.username;
       const room = rooms.get(roomId);
       if (!room) return;
-      if (!room.participants.some(p => p.userId === userId)) return;
+      if (!room.participants.some((p) => p.userId === userId)) return;
       socket.to(roomId).emit("collab:user_typing", { userId, username });
     });
 
@@ -197,7 +239,7 @@ export const setupCollabSocket = (io: Server) => {
       const userId = socket.data.userId;
       const room = rooms.get(roomId);
       if (!room) return;
-      if (!room.participants.some(p => p.userId === userId)) return;
+      if (!room.participants.some((p) => p.userId === userId)) return;
       socket.to(roomId).emit("collab:user_stop_typing", { userId });
     });
 
@@ -209,8 +251,10 @@ export const setupCollabSocket = (io: Server) => {
         socket.emit("collab:error", { message: "Room not found" });
         return;
       }
-      if (!room.participants.some(p => p.userId === userId)) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
+      if (!room.participants.some((p) => p.userId === userId)) {
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
         return;
       }
       socket.emit("collab:room_info", { room });
@@ -220,7 +264,7 @@ export const setupCollabSocket = (io: Server) => {
     socket.on("disconnect", () => {
       rooms.forEach((room) => {
         room.participants = room.participants.filter(
-          p => p.socketId !== socket.id
+          (p) => p.socketId !== socket.id,
         );
         if (room.participants.length === 0) {
           rooms.delete(room.roomId);
