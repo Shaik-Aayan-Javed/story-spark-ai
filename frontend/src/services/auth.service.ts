@@ -8,8 +8,8 @@ import {
 } from "../utils/local-storage";
 
 type AuthUserInfo = {
-  email: string;
-  userId: string;
+  email?: string;
+  userId?: string;
   name: string;
   postsCount: number;
   role: string;
