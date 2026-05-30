@@ -5,15 +5,6 @@ import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
-import StoriesComponent from "./components/stories/stories.component";
-
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -73,12 +64,14 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <>
+      <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         <ScrollToTop />
         <RootLayout>
-          <Outlet />
+          <main className="flex-grow w-full box-border">
+            <Outlet />
+          </main>
         </RootLayout>
-      </>
+      </div>
     ),
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
