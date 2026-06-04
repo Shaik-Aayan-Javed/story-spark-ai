@@ -3,7 +3,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { WandSparkles } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
 import SSInput from "../ui-component/ss-input/ss-input";
