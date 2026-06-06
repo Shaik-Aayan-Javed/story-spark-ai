@@ -20,7 +20,6 @@ const MAX_SEARCH_TERM_LENGTH = 100;
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
-
 interface ICursorPayload {
   value: string;
   id: string;
@@ -312,7 +311,6 @@ const getLatestPosts = async () => {
         path: "reactions",
         populate: { path: "userId", select: "email" },
       })
-      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -336,7 +334,6 @@ const getFeaturedPosts = async () => {
         path: "reactions",
         populate: { path: "userId", select: "email" },
       })
-      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -369,7 +366,6 @@ const getSinglePost = async (id: string) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "email");
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -392,7 +388,6 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "email");
   return result;
 };
 
@@ -404,9 +399,8 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-
-  if (!post) {
+  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
+  if (!postExists) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
