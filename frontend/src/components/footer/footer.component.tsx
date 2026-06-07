@@ -221,6 +221,9 @@ const FooterComponent = () => {
                 <i className="fa-solid fa-envelope" aria-hidden="true" />
               </span>
               <input
+                id="newsletter-email"
+                name="email"
+                autoComplete="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -241,6 +244,9 @@ const FooterComponent = () => {
               <i className="fa-solid fa-envelope text-slate-500 text-[13px]" />
 
               <input
+                  id="newsletter-email-footer"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
