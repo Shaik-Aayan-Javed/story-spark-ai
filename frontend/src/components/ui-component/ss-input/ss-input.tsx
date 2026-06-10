@@ -41,7 +41,7 @@ const SSInput = <T extends FieldValues>({
 
 
 
-  const inputType = type === "password" ? (showLocalPassword ? "text" : "password") : type;
+  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
 
   return (
     <div className="w-full min-w-0 box-border">
@@ -71,7 +71,7 @@ const SSInput = <T extends FieldValues>({
         <input
           type={inputType}
           id={name}
-          required={required}
+
           placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
@@ -96,10 +96,10 @@ const SSInput = <T extends FieldValues>({
 
           <button
             type="button"
-            onClick={() => setShowLocalPassword(!showLocalPassword)}
+            onClick={() => setShowPassword(!showPassword)}
 
             className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
-            aria-label={showLocalPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? "Hide password" : "Show password"}
 
 
 
