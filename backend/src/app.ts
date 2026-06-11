@@ -29,8 +29,11 @@ app.use(limiter);
 
 const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
-  ? ["http://localhost:4001", "http://localhost:4002"]
-  : [];
+    ? ["http://localhost:4001", "http://localhost:4002"]
+    : [
+        "https://storysparkai.vercel.app",
+        "https://www.storysparkai.vercel.app",
+      ];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
