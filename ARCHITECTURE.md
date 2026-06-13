@@ -87,6 +87,62 @@ flowchart TD
 
 ---
 
+## 🔄 Story Generation Request Flow
+
+This section illustrates the end-to-end lifecycle of a story generation request — from the moment a user submits a prompt to when they receive the generated story. Understanding this flow helps new contributors quickly navigate the codebase.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Frontend as ⚛️ Frontend<br/>(React + Vite)
+    participant Backend as ⚙️ Backend<br/>(Express API)
+    participant Auth as 🔐 JWT Middleware
+    participant AI as 🤖 AI Service<br/>(OpenAI / Gemini)
+    participant DB as 🗄️ MongoDB<br/>(Mongoose)
+    participant Socket as 🔔 Socket.IO
+
+    User->>Frontend: Enters prompt & clicks "Generate Story"
+    Frontend->>Backend: POST /api/v1/stories (prompt, genre, options)
+    Backend->>Auth: Validate JWT access token
+    Auth-->>Backend: Token valid ✅ (or 401 Unauthorized ❌)
+
+    Backend->>AI: generateStory(securePrompt)
+    Note over AI: Tries OpenAI first,<br/>falls back to Gemini<br/>if unavailable
+
+    alt OpenAI available
+        AI-->>Backend: Story text (provider: "openai")
+    else OpenAI unavailable / rate-limited
+        AI->>AI: Fallback to Gemini
+        AI-->>Backend: Story text (provider: "gemini", fallbackUsed: true)
+    end
+
+    Backend->>DB: Save story (prompt, variations, author, cover)
+    DB-->>Backend: Saved story document (_id, timestamps)
+
+    Backend->>Socket: Emit "story:generated" to user room
+    Socket-->>Frontend: Real-time notification (optional)
+
+    Backend-->>Frontend: 200 OK { data: { story, variations, ... } }
+    Frontend-->>User: Displays generated story with choices
+```
+
+### Key Observations for Contributors
+
+| Step | What to look at |
+|---|---|
+| Prompt submitted | `frontend/src/redux/apis/story.api.ts` |
+| JWT validation | `backend/src/middleware/` |
+| Story generation | `backend/src/services/ai.service.ts` |
+| AI fallback logic | `isRetryableError()` in `ai.service.ts` |
+| Saving to DB | `backend/src/controllers/` → Mongoose models |
+| Real-time push | Socket.IO emit in `backend/src/` |
+| Frontend display | `frontend/src/components/stories/` |
+
+> **Note:** The AI layer only generates content — it never writes directly to the database. All persistence is handled by the Express controllers via Mongoose.
+
+---
+
 ## 🧱 Layer-by-Layer Breakdown
 
 ### 1. ⚛️ Frontend — `frontend/`
