@@ -25,22 +25,88 @@ const ParticleField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(
-          "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
-        );
-        const data: Contributor[] = await res.json();
-        const sorted = data
-          .filter((c) => c.contributions > 0)
-          .sort((a, b) => b.contributions - a.contributions);
-        setContributors(sorted);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    const particles: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      opacity: number;
+      hue: number;
+    }[] = [];
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * canvas.offsetWidth,
+        y: Math.random() * canvas.offsetHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.4 + 0.1,
+        hue: Math.random() * 60 + 220,
+      });
+    }
+
+    const draw = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${p.opacity})`;
+        ctx.fill();
+      });
+
+      // connection lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `hsla(240, 60%, 70%, ${
+              0.06 * (1 - dist / 100)
+            })`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
       }
-    })();
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
   return (
@@ -63,87 +129,11 @@ const AnimatedCounter = ({
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
 
-  const maxContributions = contributors.length
-    ? Math.max(...contributors.map((c) => c.contributions))
-    : 1;
+  useEffect(() => {
+    if (!ref.current || hasAnimated.current || value === 0) return;
 
-  // Particle background component (simplified for brevity)
-  const ParticleField = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      let animId: number;
-      const particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number; hue: number }[] = [];
-      const resize = () => {
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = canvas.offsetWidth * dpr;
-        canvas.height = canvas.offsetHeight * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      };
-      resize();
-      window.addEventListener("resize", resize);
-      for (let i = 0; i < 50; i++) {
-        particles.push({
-          x: Math.random() * canvas.offsetWidth,
-          y: Math.random() * canvas.offsetHeight,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-          size: Math.random() * 2 + 0.5,
-          opacity: Math.random() * 0.4 + 0.1,
-          hue: Math.random() * 60 + 220,
-        });
-      }
-      const draw = () => {
-        const w = canvas.offsetWidth;
-        const h = canvas.offsetHeight;
-        ctx.clearRect(0, 0, w, h);
-        particles.forEach((p) => {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x < 0) p.x = w;
-          if (p.x > w) p.x = 0;
-          if (p.y < 0) p.y = h;
-          if (p.y > h) p.y = 0;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${p.opacity})`;
-          ctx.fill();
-        });
-        for (let i = 0; i < particles.length; i++) {
-          for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 100) {
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)})`;
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
-            }
-          }
-        }
-        animId = requestAnimationFrame(draw);
-      };
-      draw();
-      return () => {
-        cancelAnimationFrame(animId);
-        window.removeEventListener("resize", resize);
-      };
-    }, []);
-    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.5 }} />;
-  };
-
-  const AnimatedCounter = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
-    const ref = useRef<HTMLSpanElement>(null);
-    const hasAnimated = useRef(false);
-    useEffect(() => {
-      if (!ref.current || hasAnimated.current || value === 0) return;
-      const observer = new IntersectionObserver(([entry]) => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
           const obj = { val: 0 };
@@ -224,71 +214,158 @@ const ContributorCard = ({
       ([entry]) => {
         if (entry.isIntersecting && !hasBarAnimated.current) {
           hasBarAnimated.current = true;
-          gsap.to(barRef.current, { width: barWidth, duration: 1.2, ease: "power2.out", delay: 0.3 + index * 0.05 });
+          gsap.to(barRef.current, {
+            width: barWidth,
+            duration: 1.2,
+            ease: "power2.out",
+            delay: 0.3 + index * 0.05,
+          });
           observer.disconnect();
         }
-      }, { threshold: 0.2 });
-      observer.observe(barRef.current);
-      return () => observer.disconnect();
-    }, [barWidth, index]);
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(barRef.current);
+    return () => observer.disconnect();
+  }, [barWidth, index]);
 
-    const handleMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
       const card = cardRef.current;
       const glow = glowRef.current;
       if (!card || !glow) return;
+
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
+
       const rotateX = ((y - centerY) / centerY) * -6;
       const rotateY = ((x - centerX) / centerX) * 6;
-      gsap.to(card, { rotateX, rotateY, duration: 0.3, ease: "power2.out", transformPerspective: 800 });
-      gsap.to(glow, { x: x - 100, y: y - 100, opacity: 0.8, duration: 0.3 });
-    }, []);
 
-    const handleMouseLeave = useCallback(() => {
-      const card = cardRef.current;
-      const glow = glowRef.current;
-      if (!card || !glow) return;
-      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5, ease: "elastic.out(1, 0.5)" });
-      gsap.to(glow, { opacity: 0, duration: 0.4 });
-    }, []);
+      gsap.to(card, {
+        rotateX,
+        rotateY,
+        duration: 0.3,
+        ease: "power2.out",
+        transformPerspective: 800,
+      });
 
-    return (
-      <a
-        ref={cardRef}
-        href={contributor.html_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="group relative flex flex-col items-center text-center rounded-3xl p-7 will-change-transform"
+      gsap.to(glow, {
+        x: x - 100,
+        y: y - 100,
+        opacity: 0.8,
+        duration: 0.3,
+      });
+    },
+    []
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    const card = cardRef.current;
+    const glow = glowRef.current;
+    if (!card || !glow) return;
+
+    gsap.to(card, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.5,
+      ease: "elastic.out(1, 0.5)",
+    });
+
+    gsap.to(glow, { opacity: 0, duration: 0.4 });
+  }, []);
+
+  return (
+    <a
+      ref={cardRef}
+      href={contributor.html_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative flex flex-col items-center text-center rounded-3xl p-7 will-change-transform"
+      style={{
+        background: isTop3
+          ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
+          : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
+        border: `1px solid ${
+          isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
+        }`,
+        transformStyle: "preserve-3d",
+        transition: "box-shadow 0.3s ease",
+      }}
+    >
+      {/* Magnetic Glow */}
+      <div
+        ref={glowRef}
+        className="pointer-events-none absolute w-[200px] h-[200px] rounded-full opacity-0"
         style={{
           background: isTop3
-            ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
-            : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
-          border: `1px solid ${isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"}`,
-          transformStyle: "preserve-3d",
-          transition: "box-shadow 0.3s ease",
-        }}
-      >
-        <div ref={glowRef} className="pointer-events-none absolute w-[200px] h-[200px] rounded-full opacity-0" style={{
-          background: isTop3 ? `radial-gradient(circle, ${rank!.glow}, transparent 70%)` : "radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)",
+            ? `radial-gradient(circle, ${rank!.glow}, transparent 70%)`
+            : "radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)",
           filter: "blur(25px)",
-        }} />
-        {isTop3 && (
-          <div className={`absolute -top-3 -right-3 ${rank!.badge} text-slate-950 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg z-10`}>{rank!.label}</div>
-        )}
-        <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
-          <div className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${isTop3 ? "opacity-40 group-hover:opacity-70" : "opacity-0 group-hover:opacity-30"}`} style={{ background: isTop3 ? rank!.glow : "rgba(99,102,241,0.4)", filter: "blur(12px)" }} />
-          <img src={contributor.avatar_url} alt={contributor.login} className="relative h-24 w-24 rounded-full object-cover border-2 border-white/10 transition-all duration-500 group-hover:border-white/30 group-hover:scale-110" />
-          <div className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0c1222]"><div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" /></div>
+        }}
+      />
+
+      {/* Rank Badge for Top 3 */}
+      {isTop3 && (
+        <div
+          className={`absolute -top-3 -right-3 ${rank!.badge} text-slate-950 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg z-10`}
+        >
+          {rank!.label}
         </div>
-        <h3 className="text-lg font-bold text-white mb-1 transition-colors group-hover:text-indigo-300" style={{ transform: "translateZ(20px)" }}>@{contributor.login}</h3>
-        <div className="w-full mt-3 mb-4" style={{ transform: "translateZ(15px)" }}>
-          <div className="flex justify-between text-xs text-slate-500 mb-1.5"><span>Contributions</span><span className="text-indigo-400 font-semibold">{contributor.contributions}</span></div>
-          <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden"><div ref={barRef} className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500" style={{ width: "0%" }} /></div>
+      )}
+
+      {/* Avatar */}
+      <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
+        <div
+          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${
+            isTop3
+              ? "opacity-40 group-hover:opacity-70"
+              : "opacity-0 group-hover:opacity-30"
+          }`}
+          style={{
+            background: isTop3 ? rank!.glow : "rgba(99,102,241,0.4)",
+            filter: "blur(12px)",
+          }}
+        />
+        <img
+          src={contributor.avatar_url}
+          alt={contributor.login}
+          className="relative h-24 w-24 rounded-full object-cover border-2 border-white/10 transition-all duration-500 group-hover:border-white/30 group-hover:scale-110"
+        />
+        <div className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0c1222]">
+          <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+        </div>
+      </div>
+
+      {/* Username */}
+      <h3
+        className="text-lg font-bold text-white mb-1 transition-colors group-hover:text-indigo-300"
+        style={{ transform: "translateZ(20px)" }}
+      >
+        @{contributor.login}
+      </h3>
+
+      {/* Contributions Bar */}
+      <div
+        className="w-full mt-3 mb-4"
+        style={{ transform: "translateZ(15px)" }}
+      >
+        <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+          <span>Contributions</span>
+          <span className="text-indigo-400 font-semibold">
+            {contributor.contributions}
+          </span>
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+          <div
+            ref={barRef}
+            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
+            style={{ width: "0%" }}
+          />
         </div>
       </div>
 
@@ -731,21 +808,77 @@ const ContributorsComponent = () => {
 
         {/* ─── CTA ─── */}
         <div ref={ctaRef} className="mt-24 md:mt-32">
-          <div className="cta-container relative rounded-3xl p-10 md:p-14 overflow-hidden text-center" style={{ background: "linear-gradient(135deg, rgba(30,27,75,0.6) 0%, rgba(15,23,42,0.8) 100%", border: "1px solid rgba(129,140,248,0.15)" }}>
+          <div
+            className="cta-container relative rounded-3xl p-10 md:p-14 overflow-hidden text-center"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(30,27,75,0.6) 0%, rgba(15,23,42,0.8) 100%)",
+              border: "1px solid rgba(129,140,248,0.15)",
+            }}
+          >
+            {/* Decorative orbs */}
             <div className="cta-orb absolute top-6 left-10 w-20 h-20 rounded-full bg-indigo-500/10 blur-2xl" />
             <div className="cta-orb absolute bottom-8 right-14 w-28 h-28 rounded-full bg-purple-500/10 blur-2xl" />
             <div className="cta-orb absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-fuchsia-500/5 blur-3xl" />
+
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-4 py-1.5 text-sm text-indigo-300 mb-6"><Globe size={14} />Join the community</div>
-              <h3 className="text-3xl md:text-5xl font-black text-white mb-5">Ready to <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #e879f9)" }}>Contribute</span>?</h3>
-              <p className="text-slate-400 text-lg max-w-xl mx-auto mb-10 leading-relaxed">Fork the repo, pick an issue, and make your first PR. Every line of code makes a difference.</p>
-              <a href="https://github.com/ronisarkarexe/story-spark-ai" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white text-lg transition-all duration-300 hover:scale-105" style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)", boxShadow: "0 8px 32px rgba(99,102,241,0.3)" }}>
-                <Code2 size={20} className="transition-transform duration-300 group-hover:rotate-12" />Start Contributing<ExternalLink size={16} className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-4 py-1.5 text-sm text-indigo-300 mb-6">
+                <Globe size={14} />
+                Join the community
+              </div>
+
+              <h3 className="text-3xl md:text-5xl font-black text-white mb-5">
+                Ready to{" "}
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(135deg, #818cf8, #e879f9)",
+                  }}
+                >
+                  Contribute
+                </span>
+                ?
+              </h3>
+
+              <p className="text-slate-400 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+                Fork the repo, pick an issue, and make your first PR. Every line
+                of code makes a difference.
+              </p>
+
+              <a
+                href="https://github.com/ronisarkarexe/story-spark-ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white text-lg transition-all duration-300 hover:scale-105"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
+                  boxShadow: "0 8px 32px rgba(99,102,241,0.3)",
+                }}
+              >
+                <Code2
+                  size={20}
+                  className="transition-transform duration-300 group-hover:rotate-12"
+                />
+                Start Contributing
+                <ExternalLink
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                />
               </a>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes contributorsGradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
     </div>
   );
 };
