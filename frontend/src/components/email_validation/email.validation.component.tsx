@@ -13,7 +13,7 @@ interface Inputs {
 
 const EmailValidationComponent = () => {
   const navigate = useNavigate();
-  const { register, getValues } = useForm<Inputs>({
+  const { register, getValues, formState: { errors } } = useForm<Inputs>({
     mode: "onChange",
   });
   const [verifyOtp] = useVerifyOtpMutation();
@@ -140,6 +140,13 @@ const EmailValidationComponent = () => {
             required={true}
             icon="fas fa-key"
             register={register}
+            validation={{
+              required: "Please enter OTP",
+              minLength: { value: 6, message: "OTP must be 6 digits" },
+              maxLength: { value: 6, message: "OTP must be 6 digits" },
+              pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+            }}
+            error={errors.otp}
           />
           
           {/* Visual Feedback Banner Row */}
@@ -167,7 +174,18 @@ const EmailValidationComponent = () => {
           />
         </form>
         
-        <p className="mt-8 text-sm text-center text-slate-400">
+        <p className="mt-6 text-sm text-center text-slate-400 select-none">
+          Entered the wrong email?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/signup", { replace: true })}
+            className="font-semibold text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200 cursor-pointer"
+          >
+            Sign Up Again
+          </button>
+        </p>
+
+        <p className="mt-6 text-sm text-center text-slate-400">
           Need help? Contact us at{" "}
           <a
             className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
