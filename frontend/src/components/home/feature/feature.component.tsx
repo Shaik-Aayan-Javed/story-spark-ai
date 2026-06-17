@@ -60,7 +60,7 @@ const FeatureComponent = () => {
       </h2>
 
       {posts.length > 0 ? (
-        <div className="grid gap-8 sm:grid-cols-2">
+        <div className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 xl:grid-cols-3">
           {posts.map((post: Post) => {
             const postUrl = `${window.location.origin}/post/${post._id}`;
 
@@ -68,7 +68,7 @@ const FeatureComponent = () => {
               <div
                 key={post._id}
                 onClick={() => navigate(`/post/${post._id}`)}
-                className="motion-card h-full bg-blue-500/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group box-border w-full"
+                className="motion-card h-full min-w-[85vw] snap-start bg-blue-500/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group box-border w-full md:min-w-0"
               >
                 {post.imageURL && (
                   <div className="relative overflow-hidden h-48 w-full">
