@@ -1,4 +1,4 @@
-import Razorpay from "razorpay";
+import Razorpay from 'razorpay';
 
 let razorpayInstance: InstanceType<typeof Razorpay> | null = null;
 
