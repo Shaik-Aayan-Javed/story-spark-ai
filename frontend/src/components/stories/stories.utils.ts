@@ -45,6 +45,17 @@ export interface ITopicData {
   selected: boolean;
 }
 
+export interface CharacterProfile {
+  name: string;
+  role: string;
+  personality: string;
+  strengths: string[];
+  weaknesses: string[];
+  relationships: string;
+}
+
+export const topicsData: ITopicData[] = [
+  { title: "#AIWriting", color: "bg-blue-100 text-blue-800", selected: true },
 export const TOPICS: ITopicData[] = [
   {
     title: "#StoryIdeas",
@@ -92,11 +103,17 @@ export const TOPICS: ITopicData[] = [
 
 export const topicsData: ITopicData[] = TOPICS;
 
-export const getWordCount = (str: string) => {
-  if (typeof str !== "string" || !str.trim()) {
+export const getWordCount = (str: string | undefined): number => {
+  if (typeof str !== "string") {
     return 0;
   }
-  return str.trim().split(/\s+/).length;
+
+  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
+  if (!normalizedText) {
+    return 0;
+  }
+
+  return normalizedText.split(/\s+/).length;
 };
 
 export const prompts = [
@@ -150,3 +167,5 @@ export const prompts = [
     prompt: "A time traveler finds themselves stuck in the age of dinosaurs.",
   },
 ];
+
+export const TEMPLATE_STORY_UUID = "test-1";
