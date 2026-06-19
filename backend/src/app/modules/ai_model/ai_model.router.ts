@@ -20,4 +20,10 @@ router.post(
   AiModelController.aiFreeModelGenerate
 );
 
+// Generate Character Profile
+router.post(
+  "/generate-character-profile",
+  AiModelController.generateCharacterProfile
+);
+
 export const AIModelRouter = router;

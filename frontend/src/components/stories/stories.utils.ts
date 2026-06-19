@@ -41,6 +41,15 @@ export interface ITopicData {
   selected: boolean;
 }
 
+export interface CharacterProfile {
+  name: string;
+  role: string;
+  personality: string;
+  strengths: string[];
+  weaknesses: string[];
+  relationships: string;
+}
+
 export const topicsData: ITopicData[] = [
   { title: "#AIWriting", color: "bg-blue-100 text-blue-800", selected: true },
   {
