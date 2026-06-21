@@ -7,6 +7,7 @@ import {
   useGetPostByIdQuery,
   useGetPostByTagQuery,
   useUpdatePostMutation,
+  useForkStoryMutation,
 } from "../../redux/apis/post.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
@@ -119,6 +120,7 @@ const PostDetailsComponent = () => {
   const [showShareMenu, setShowShareMenu] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
+  const [forkStory, { isLoading: isForking }] = useForkStoryMutation();
   const readerPreferences = useReaderPreferences();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
     skip: !id || (!showTimeline && !showComparison),
@@ -186,6 +188,23 @@ const PostDetailsComponent = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update story. Please try again.");
+    }
+  };
+
+  const handleFork = async () => {
+    if (!currentUser) {
+      toast.error("You need to login to fork this story");
+      return;
+    }
+    if (!id) return;
+    try {
+      const res = await forkStory(id).unwrap();
+      toast.success("Story forked! You can now edit your draft.");
+      navigate(`/post/${res.data._id}`);
+      window.scrollTo(0, 0);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fork story.");
     }
   };
 
@@ -376,6 +395,13 @@ const PostDetailsComponent = () => {
                   <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
                   </div>
+                  {post?.parentStoryId && (
+                    <div className="mt-1">
+                      <Link to={`/post/${post.parentStoryId._id}`} className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full hover:bg-emerald-500/20 transition-colors border border-emerald-500/20 shadow-sm">
+                        🌱 Forked from {post.parentStoryId.author?.name || 'Unknown'}'s story
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -537,15 +563,25 @@ const PostDetailsComponent = () => {
                   />
                 )}
               </div>
-              <div className="relative">
-  <button
-    onClick={() => setShowShareMenu(!showShareMenu)}
-    className="px-3 py-2 rounded bg-slate-700 text-white hover:bg-slate-600 transition"
-  >
-    🔗 Share
-  </button>
+              <div className="relative flex items-center gap-2">
+                {currentUser && !isOwner && post?.isPublished && (
+                  <button
+                    onClick={handleFork}
+                    disabled={isForking}
+                    className="px-3 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm text-sm"
+                  >
+                    {isForking ? "Forking..." : "🌱 Fork"}
+                  </button>
+                )}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="px-3 py-2 rounded bg-slate-700 text-white hover:bg-slate-600 transition flex items-center gap-1.5 shadow-sm text-sm"
+                  >
+                    🔗 Share
+                  </button>
 
-  {showShareMenu && (
+                  {showShareMenu && (
     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
       <button
         onClick={handleCopyLink}
