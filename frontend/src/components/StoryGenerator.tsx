@@ -1,6 +1,6 @@
 // frontend/src/components/StoryGenerator.tsx
 import { useState } from 'react';
-import api from '../services/api';
+import instance from '../helpers/axios/axiosInstance';
 
 interface StoryGeneratorProps {
   onStoryGenerated?: (stories: any[]) => void;
@@ -25,7 +25,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
     setIsLoading(true);
 
     try {
-      const response = await api.post('/ai/generate', {
+      const response = await instance.post('/ai/generate', {
         prompt: prompt.trim(),
         variations: variationCount,
       });

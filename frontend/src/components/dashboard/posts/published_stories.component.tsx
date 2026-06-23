@@ -1,8 +1,6 @@
 
 import React, { useMemo, useState } from "react";
-import DownloadButtons from '../../../../components/DownloadButtons';
-import React, { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
@@ -143,28 +141,28 @@ const PublishedStoriesComponent: React.FC = () => {
       )}
 
       {!isLoading && !isError && stories.length === 0 && (
-  <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-12 text-center shadow-sm dark:border-blue-500/20 dark:from-blue-500/10 dark:via-[#0a1020] dark:to-indigo-500/10">
-    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl text-blue-600 shadow-inner dark:bg-blue-500/15 dark:text-blue-300">
-      <i className="fas fa-book-open"></i>
-    </div>
+        <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-12 text-center shadow-sm dark:border-blue-500/20 dark:from-blue-500/10 dark:via-[#0a1020] dark:to-indigo-500/10">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl text-blue-600 shadow-inner dark:bg-blue-500/15 dark:text-blue-300">
+            <i className="fas fa-book-open"></i>
+          </div>
 
-    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-      No stories yet!
-    </h3>
+          <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+            No stories yet!
+          </h3>
 
-    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-400">
-      Start by entering a prompt below and create your first AI-powered story.
-    </p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-400">
+            Start by entering a prompt below and create your first AI-powered story.
+          </p>
 
-    <Link
-      to="/story-workspace"
-      className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500"
-    >
-      <i className="fas fa-plus text-xs"></i>
-      Create Your First Story
-    </Link>
-  </div>
-)}
+          <Link
+            to="/story-workspace"
+            className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500"
+          >
+            <i className="fas fa-plus text-xs"></i>
+            Create Your First Story
+          </Link>
+        </div>
+      )}
 
       {!isLoading && !isError && stories.length > 0 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -210,16 +208,7 @@ const PublishedStoriesComponent: React.FC = () => {
                     {getExcerpt(story)}
                   </p>
 
-                  <div className="mt-3 flex justify-end">
-  <DownloadButtons story={story} />
-</div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {story.viewsCount}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">
-                        Views
-                      </p>
-                    </div>
+                  <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4 dark:border-white/5">
                     <div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.likesCount}
@@ -240,28 +229,31 @@ const PublishedStoriesComponent: React.FC = () => {
                 </div>
               </div>
             </article>
-          ))}
+          ))
+        }
         </div>
       )}
 
-      {data?.meta && stories.length > 0 && stories.length < data.meta.total && (
-        <div className="flex justify-center mt-6 mb-4">
-          <button
-            onClick={loadMore}
-            disabled={isLoading}
-            className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i> Loading...
-              </>
-            ) : (
-              "Load More"
-            )}
-          </button>
-        </div>
-      )}
+{
+  data?.meta && stories.length > 0 && stories.length < data.meta.total && (
+    <div className="flex justify-center mt-6 mb-4">
+      <button
+        onClick={loadMore}
+        disabled={isLoading}
+        className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoading ? (
+          <>
+            <i className="fas fa-spinner fa-spin"></i> Loading...
+          </>
+        ) : (
+          "Load More"
+        )}
+      </button>
     </div>
+  )
+}
+    </div >
   );
 };
 

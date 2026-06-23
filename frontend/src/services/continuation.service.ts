@@ -1,15 +1,17 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import instance from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const continueStory = async (chapters: Chapter[]) => {
+export const continueStory = async (chapters: Chapter[], tone?: string) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
 
+  const toneInstruction = tone && tone !== "Default" ? `- Adopt a ${tone} tone` : "- Keep emotional tone";
+
   try {
-    const response = await axios.post(
+    const response = await instance.post(
       `${BASE_URL}/story-continuation/continue`,
       {
         prompt: `
@@ -17,8 +19,8 @@ Continue this story naturally.
 
 Rules:
 - Maintain character consistency
-- Keep emotional tone
-- Avoid repetition
+${toneInstruction}
+- Resolve ongoing subplots if appropriate
 - Continue the narrative smoothly
 
 Story:
@@ -32,7 +34,6 @@ ${previousContent}
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
   }
-  return response.data.data.continuation;
 };
 
 /**
@@ -46,7 +47,7 @@ export const getContinuations = async (
   count: number = 3
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
-  const response = await axios.post(`${BASE_URL}/story-continuation/continuations`, {
+  const response = await instance.post(`${BASE_URL}/story-continuation/continuations`, {
     prompt: `
 Continue this story naturally.
 

@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-
-import { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
   Mail,
@@ -16,13 +14,12 @@ import {
   MapPin,
   Clock,
   Briefcase,
-  Twitter,
-  Linkedin,
-  Github,
   Globe,
   MessageCircle,
+  CheckCircle2,
 } from "lucide-react";
-import { instance as axios } from "../../helpers/axios/axiosInstance";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
@@ -103,25 +100,25 @@ const INFO_CARDS = [
 
 const SOCIAL_LINKS = [
   {
-    icon: Github,
+    icon: "fa-brands fa-github",
     label: "GitHub",
     href: "https://github.com/ronisarkarexe",
     color: "hover:bg-slate-700/50 hover:border-slate-500/40 hover:text-white",
   },
   {
-    icon: Linkedin,
+    icon: "fa-brands fa-linkedin-in",
     label: "LinkedIn",
     href: "https://linkedin.com/in/ronisarkarexe",
     color: "hover:bg-blue-600/20 hover:border-blue-500/40 hover:text-blue-400",
   },
   {
-    icon: Twitter,
+    icon: "fa-brands fa-x-twitter",
     label: "Twitter / X",
     href: "https://twitter.com/ronisarkarexe",
-    color: "hover:bg-sky-500/20 hover:border-sky-500/40 hover:text-sky-400",
+    color: "hover:bg-slate-800/40 hover:border-slate-600/40 hover:text-slate-200",
   },
   {
-    icon: Globe,
+    icon: "fa-solid fa-globe",
     label: "Portfolio",
     href: "https://ronisarkarexe.github.io",
     color: "hover:bg-purple-500/20 hover:border-purple-500/40 hover:text-purple-400",
@@ -169,323 +166,7 @@ const FORM_FIELDS: Array<{
     required: true,
   },
 ];
-}> = [
-    {
-      id: "contact-fullname",
-      name: "fullname",
-      type: "text",
-      label: "Full Name",
-      placeholder: "Jane Smith",
-      icon: User,
-      autoComplete: "name",
-    },
-    {
-      id: "contact-email",
-      name: "email",
-      type: "email",
-      label: "Email Address",
-      placeholder: "jane@example.com",
-      icon: Mail,
-      autoComplete: "email",
-    },
-    {
-      id: "contact-subject",
-      name: "subject",
-      type: "text",
-      label: "Subject",
-      placeholder: "What's this about?",
-      icon: FileText,
-      autoComplete: "off",
-    },
-  ];
 
-const STATS = [
-  { value: "24h", label: "Response time" },
-  { value: "100%", label: "Read rate" },
-  { value: "Open", label: "Source project" },
-] as const;
-
-// --- FloatingLabelInput ---
-// ΓöÇΓöÇΓöÇ FloatingLabelInput ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-
-interface FloatingLabelInputProps {
-  id: string;
-  name: FormField;
-  type: string;
-  label: string;
-  icon: React.ElementType;
-  autoComplete: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  error?: boolean;
-  required?: boolean;
-}
-
-const FloatingLabelInput = ({
-  id,
-  name,
-  type,
-  label,
-  icon: Icon,
-  autoComplete,
-  value,
-  onChange,
-  error = false,
-  required = false,
-}: FloatingLabelInputProps) => {
-  const [focused, setFocused] = useState(false);
-  const isFloated = focused || value.length > 0;
-
-  return (
-    <div className="contact-float-field group">
-      <div className="relative">
-        {/* Icon */}
-        <span
-          className={`contact-float-icon ${isFloated ? "contact-float-icon--active" : ""}`}
-          aria-hidden="true"
-        >
-          <Icon className="h-4 w-4" />
-        </span>
-
-        {/* Input */}
-        <input
-          id={id}
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          required={required}
-          autoComplete={autoComplete}
-          placeholder=" "
-          aria-label={label}
-          aria-invalid={error}
-          aria-required={required}
-          className={[
-            "contact-float-input",
-            isFloated ? "contact-float-input--active" : "",
-            error ? "contact-float-input--error" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
-
-        {/* Floating label with required indicator */}
-        <label
-          htmlFor={id}
-          className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""}`}
-        >
-          {label}
-          {required && (
-            <span className="contact-required-star" aria-hidden="true"> *</span>
-          )}
-        </label>
-
-        {/* Animated focus underline */}
-        <span className="contact-float-underline" aria-hidden="true" />
-      </div>
-
-      {/* Inline validation feedback */}
-      {error && (
-        <p className="contact-field-error-msg" role="alert">
-          <AlertCircle className="inline h-3 w-3 mr-1" aria-hidden="true" />
-          {name === "email" ? "Please enter a valid email address." : `${label} is required.`}
-        </p>
-      )}
-    </div>
-  );
-};
-
-// --- FloatingLabelTextarea ---
-
-interface FloatingLabelTextareaProps {
-  value: string;
-  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
-  error?: boolean;
-}
-
-}: FloatingLabelInputProps) => {
-  const [focused, setFocused] = useState(false);
-  const isFloated = focused || value.length > 0;
-
-  return (
-    <div className="contact-float-field group">
-      <div className="relative">
-        {/* Icon */}
-        <span
-          className={`contact-float-icon ${isFloated ? "contact-float-icon--active" : ""}`}
-          aria-hidden="true"
-        >
-          <Icon className="h-4 w-4" />
-        </span>
-
-        {/* Input */}
-        <input
-          id={id}
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          required
-          autoComplete={autoComplete}
-          placeholder=" "
-          aria-label={label}
-          aria-invalid={error}
-          className={[
-            "contact-float-input",
-            isFloated ? "contact-float-input--active" : "",
-            error ? "contact-float-input--error" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
-
-        {/* Floating label */}
-        <label
-          htmlFor={id}
-          className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""}`}
-        >
-          {label}
-        </label>
-
-        {/* Animated focus underline */}
-        <span className="contact-float-underline" aria-hidden="true" />
-      </div>
-    </div>
-  );
-};
-
-// ΓöÇΓöÇΓöÇ FloatingLabelTextarea ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-
-interface FloatingLabelTextareaProps {
-  value: string;
-  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
-  error?: boolean;
-}
-
-const FloatingLabelTextarea = ({
-  value,
-  onChange,
-  error = false,
-}: FloatingLabelTextareaProps) => {
-  const [focused, setFocused] = useState(false);
-  const isFloated = focused || value.length > 0;
-
-  return (
-    <div className="contact-float-field group">
-      <div className="relative">
-        {/* Icon */}
-        <span
-          className={`contact-float-icon contact-float-icon--textarea ${
-            isFloated ? "contact-float-icon--active" : ""
-          }`}
-          aria-hidden="true"
-        >
-          <Pencil className="h-4 w-4" />
-        </span>
-
-        {/* Textarea */}
-        <textarea
-          id="contact-message"
-          rows={5}
-          name="message"
-          value={value}
-          onChange={onChange}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          required
-          placeholder=" "
-          aria-label="Message"
-          aria-invalid={error}
-          aria-required="true"
-          className={[
-            "contact-float-input contact-float-textarea",
-            isFloated ? "contact-float-input--active" : "",
-            error ? "contact-float-input--error" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
-
-        {/* Floating label with required indicator */}
-        <label
-          htmlFor="contact-message"
-          className={`contact-float-label contact-float-label--textarea ${
-            isFloated ? "contact-float-label--floated" : ""
-          }`}
-        >
-          Message
-          <span className="contact-required-star" aria-hidden="true"> *</span>
-        </label>
-
-        {/* Animated focus underline */}
-        <span className="contact-float-underline" aria-hidden="true" />
-      </div>
-
-      {error && (
-        <p className="contact-field-error-msg" role="alert">
-          <AlertCircle className="inline h-3 w-3 mr-1" aria-hidden="true" />
-          Message is required.
-        </p>
-      )}
-    </div>
-  );
-};
-
-// --- Main Contact component ---
-
-  return (
-    <div className="contact-float-field group">
-      <div className="relative">
-        {/* Icon */}
-        <span
-          className={`contact-float-icon contact-float-icon--textarea ${isFloated ? "contact-float-icon--active" : ""
-            }`}
-          aria-hidden="true"
-        >
-          <Pencil className="h-4 w-4" />
-        </span>
-
-        {/* Textarea */}
-        <textarea
-          id="contact-message"
-          rows={5}
-          name="message"
-          value={value}
-          onChange={onChange}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          required
-          placeholder=" "
-          aria-label="Message"
-          aria-invalid={error}
-          className={[
-            "contact-float-input contact-float-textarea",
-            isFloated ? "contact-float-input--active" : "",
-            error ? "contact-float-input--error" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
-
-        {/* Floating label */}
-        <label
-          htmlFor="contact-message"
-          className={`contact-float-label contact-float-label--textarea ${isFloated ? "contact-float-label--floated" : ""
-            }`}
-        >
-          Message
-        </label>
-
-        {/* Animated focus underline */}
-        <span className="contact-float-underline" aria-hidden="true" />
-      </div>
-    </div>
-  );
-};
 
 // ΓöÇΓöÇΓöÇ Main Contact component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
@@ -508,6 +189,7 @@ interface FloatingLabelInputProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   error?: boolean;
+  required?: boolean;
 }
 
 const FloatingLabelInput = ({
@@ -646,6 +328,8 @@ export default function Contact() {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, boolean>>>({});
   const isSubmittingRef = useRef(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -667,7 +351,7 @@ export default function Contact() {
   }, []);
 
   const changeHandler = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const fieldName = e.target.name as FormField;
     setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
@@ -760,8 +444,6 @@ export default function Contact() {
             className={`contact-badge inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
-            className={`contact-badge inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
           >
             <Zap className="h-3 w-3" aria-hidden="true" />
             Get in Touch
@@ -775,10 +457,6 @@ export default function Contact() {
             className={`contact-col-left flex flex-col transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
-          {/* ΓöÇΓöÇ LEFT COLUMN ΓöÇΓöÇ */}
-          <div
-            className={`contact-col-left flex flex-col transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
           >
             {/* Desktop badge */}
             <span className="contact-badge mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 lg:inline-flex">
@@ -888,7 +566,7 @@ export default function Contact() {
                 Find me on
               </p>
               <div className="flex items-center gap-2">
-                {SOCIAL_LINKS.map(({ icon: Icon, label, href, color }) => (
+                {SOCIAL_LINKS.map(({ icon, label, href, color }) => (
                   <a
                     key={label}
                     href={href}
@@ -897,7 +575,7 @@ export default function Contact() {
                     aria-label={label}
                     className={`contact-social-btn flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-500 transition-all duration-200 ${color}`}
                   >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    <i className={`${icon} text-sm`} aria-hidden="true"></i>
                   </a>
                 ))}
               </div>
@@ -1023,10 +701,6 @@ export default function Contact() {
             className={`contact-col-right w-full lg:sticky lg:top-24 transition-all duration-700 delay-150 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
-          {/* ΓöÇΓöÇ RIGHT COLUMN ΓÇö FORM ΓöÇΓöÇ */}
-          <div
-            className={`contact-col-right w-full lg:sticky lg:top-24 transition-all duration-700 delay-150 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
           >
             <div className="contact-form-shell">
               <div aria-hidden="true" className="contact-form-glow-ring" />
@@ -1041,8 +715,6 @@ export default function Contact() {
                   </h2>
                   <p className="mt-1.5 text-sm text-slate-400">
                     All fields marked <span className="text-violet-400 font-semibold">*</span> are required. We'll reply within 24 hours.
-                  <p className="mt-1.5 text-sm text-slate-500">
-                    We'll get back to you within 24 hours.
                   </p>
                 </div>
 
@@ -1054,7 +726,6 @@ export default function Contact() {
                 >
                   {/* Floating label text inputs */}
                   {FORM_FIELDS.map(({ id, name, type, label, icon, autoComplete, required }) => (
-                  {FORM_FIELDS.map(({ id, name, type, label, icon, autoComplete }) => (
                     <FloatingLabelInput
                       key={id}
                       id={id}
@@ -1098,7 +769,7 @@ export default function Contact() {
                     disabled={loading}
                     aria-busy={loading}
                     aria-label={loading ? "Sending message…" : "Send message"}
-                    aria-label={loading ? "Sending messageΓÇª" : "Send message"}
+
                     className="contact-submit-btn group relative mt-1 flex h-12 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-sm font-bold text-white sm:h-[3.125rem] sm:text-base"
                   >
                     <span aria-hidden="true" className="contact-btn-gradient absolute inset-0" />
@@ -1115,7 +786,7 @@ export default function Contact() {
                             className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                           />
                           <span>Sending…</span>
-                          <span>SendingΓÇª</span>
+
                         </>
                       ) : (
                         <>
@@ -1148,164 +819,12 @@ export default function Contact() {
                           We'll get back to you within 24 hours.
                         </p>
                       </div>
-                      className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3.5 animate-fade-in"
-                    >
-                      <CheckCircle2
-                        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"
-                        aria-hidden="true"
-                      />
-                      <p className="text-sm font-medium text-emerald-400">
-                        Message sent ΓÇö we'll get back to you within 24 hours.
-                      </p>
                     </div>
                   )}
-
-            <div className="absolute flex h-44 w-44 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-xl">
-              <Sparkles className="h-20 w-20 text-purple-400" />
+                </form>
+              </div>
             </div>
           </div>
-        </motion.div>
-
-      {/* RIGHT */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="relative min-w-0"
-        >
-          <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-2xl" />
-
-        <form
-          onSubmit={submitHandler}
-          className="relative w-full max-w-full space-y-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/30 sm:p-10"
-        >
-  {/* NAME */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
-  <User className="h-5 w-5 flex-shrink-0 text-purple-300" />
-
-  <div className="flex flex-col flex-1 min-w-0">
-    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-300">
-      Full Name
-    </label>
-
-    <input
-      type="text"
-      name="fullname"
-      value={formData.fullname}
-      onChange={changeHandler}
-      placeholder="John Doe"
-      required
-      className="w-full min-w-0 max-w-full bg-transparent border-none p-0 text-base text-white placeholder:text-slate-400 outline-none focus:ring-0"
-    />
-  </div>
-</div>
-
-  {/* EMAIL */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
-    <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
-    <div className="flex flex-col flex-1 min-w-0">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 block">
-        Email Address
-      </label>
-     <input
-  type="email"
-  name="email"
-  value={formData.email}
-  onChange={changeHandler}
-  placeholder="john@example.com"
-  required
-  className="w-full min-w-0 max-w-full bg-transparent border-none p-0 text-base text-white placeholder:text-slate-400 outline-none focus:ring-0"
-/>
-    </div>
-  </div>
-
-  {/* SUBJECT */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
-    <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
-    <div className="flex flex-col flex-1 min-w-0">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 block">
-        Subject
-      </label>
-      <input
-  type="text"
-  name="subject"
-  value={formData.subject}
-  onChange={changeHandler}
-  placeholder="Project Collaboration"
-  required
-  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
-/>
-    </div>
-  </div>
-
-  {/* MESSAGE */}
-  <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
-    <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex flex-col flex-1 min-w-0">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-2 block">
-        Message
-      </label>
-      <textarea
-  rows={6}
-  name="message"
-  value={formData.message}
-  onChange={changeHandler}
-  placeholder="Tell us about your idea..."
-  maxLength={500}
-  required
-  className="w-full min-w-0 max-w-full resize-none bg-transparent border-none p-0 text-base text-white placeholder:text-slate-400 outline-none focus:ring-0"
-/>
-<div className="mt-2 text-right text-xs text-slate-400">
-  {formData.message.length}/500
-</div>
-    </div>
-  </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  aria-busy={loading}
-                  aria-label={loading ? "Sending message…" : "Send message"}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer mt-1 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      <span>Sending…</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
-                      <span>Send Message</span>
-                    </>
-                  )}
-                </button>
-
-  {/* SUCCESS & ERROR MESSAGE BLOCKS */}
-  {success && (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4"
-    >
-      <p className="text-center text-sm font-medium text-green-400 sm:text-base">
-      🎉 Thank you! Your message has been sent successfully.      </p>
-    </motion.div>
-  )}
-
-  {error && (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4"
-    >
-      <p className="text-center text-sm font-medium text-red-400 sm:text-base">
-        {error}
-      </p>
-    </motion.div>
-  )}
-</form>
         </motion.div>
       </div>
     </section>

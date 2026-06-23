@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useDebounce } from "../hooks/useDebounce";
-import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../services/searchApi";
+import { useDebounce } from "../../hooks/useDebounce";
+import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../../services/searchApi";
 
 const GENRES = ["Fantasy", "Sci-Fi", "Mystery", "Romance", "Thriller", "Horror", "Adventure", "Drama"];
 
@@ -45,7 +45,7 @@ const SearchPage: React.FC = () => {
     setError(false);
 
     searchApi({ q: debouncedQuery, type, genre, sortBy, page, limit: 10 })
-      .then((data) => { if (!cancelled) { setResults(data); setLoading(false); } })
+      .then((data: any) => { if (!cancelled) { setResults(data); setLoading(false); } })
       .catch(() => { if (!cancelled) { setError(true); setLoading(false); } });
 
     return () => { cancelled = true; };
@@ -95,7 +95,7 @@ const SearchPage: React.FC = () => {
           <aside className="w-56 shrink-0 space-y-6 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-800/60">
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Type</p>
-              {(["all", "story", "user", "tag"] as const).map((t) => (
+              {(["all", "story", "user", "tag"] as any[]).map((t: any) => (
                 <button
                   key={t}
                   type="button"
